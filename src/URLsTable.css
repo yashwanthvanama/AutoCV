@@ -172,6 +172,36 @@
   min-width: 180px;
 }
 
+.actions-cell {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.delete-button {
+  background: #fee;
+  color: #c33;
+  border: 1px solid #fcc;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.delete-button:hover {
+  background: #fcc;
+  color: #a11;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.delete-button:active {
+  transform: translateY(0);
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .urls-table {

@@ -33,6 +33,32 @@ function URLsTable() {
     }
   }
 
+  const handleDelete = async (id, url) => {
+    if (!window.confirm(`Are you sure you want to delete this URL?\n\n${url}`)) {
+      return
+    }
+    
+    try {
+      const response = await fetch(`http://localhost:8000/api/urls/${id}`, {
+        method: 'DELETE'
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      console.log('Delete response:', data)
+      
+      // Refresh the URLs list after successful deletion
+      await fetchUrls()
+      
+    } catch (err) {
+      console.error('Error deleting URL:', err)
+      alert(`Failed to delete URL: ${err.message}`)
+    }
+  }
+
   const formatDate = (dateString) => {
     const date = new Date(dateString)
     return date.toLocaleString('en-US', {
@@ -89,6 +115,7 @@ function URLsTable() {
                 <th>URL</th>
                 <th>ID</th>
                 <th>Submitted At</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -110,6 +137,15 @@ function URLsTable() {
                   </td>
                   <td className="date-cell">
                     {formatDate(urlRecord.submitted_at)}
+                  </td>
+                  <td className="actions-cell">
+                    <button 
+                      onClick={() => handleDelete(urlRecord.id, urlRecord.url)}
+                      className="delete-button"
+                      title="Delete this URL"
+                    >
+                      🗑️ Delete
+                    </button>
                   </td>
                 </tr>
               ))}

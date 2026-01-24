@@ -99,6 +99,51 @@ async def get_all_urls(db: Session = Depends(get_db)):
         )
 
 
+# Endpoint to delete a URL by ID
+@app.delete("/api/urls/{url_id}")
+async def delete_url(url_id: str, db: Session = Depends(get_db)):
+    """
+    Delete a URL from the database by its ID.
+    
+    Args:
+        url_id: UUID of the URL to delete
+        db: Database session (injected by FastAPI)
+        
+    Returns:
+        Success message
+    """
+    try:
+        # Find the URL by ID
+        url_record = db.query(URLSubmissionModel).filter(
+            URLSubmissionModel.id == url_id
+        ).first()
+        
+        if not url_record:
+            raise HTTPException(
+                status_code=404,
+                detail=f"URL with ID {url_id} not found"
+            )
+        
+        # Delete the record
+        db.delete(url_record)
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": f"URL deleted successfully",
+            "deleted_id": url_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error deleting URL: {str(e)}"
+        )
+
+
 # Main endpoint to handle URL submissions
 @app.post("/api/submit-url", response_model=URLResponse)
 async def submit_url(submission: URLSubmission, db: Session = Depends(get_db)):
