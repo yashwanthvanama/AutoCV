@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import './App.css'
+import URLsTable from './URLsTable'
 
 function App() {
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [view, setView] = useState('form') // 'form' or 'table'
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -43,28 +45,49 @@ function App() {
 
   return (
     <div className="app">
-      <h1>URL Submission Form</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="url-input">Enter URL:</label>
-          <input
-            id="url-input"
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://example.com"
-            required
-            disabled={loading}
-          />
-        </div>
-        <button type="submit" disabled={loading}>
-          {loading ? 'Submitting...' : 'Submit'}
+      <nav className="nav-tabs">
+        <button 
+          className={`nav-tab ${view === 'form' ? 'active' : ''}`}
+          onClick={() => setView('form')}
+        >
+          Submit URL
         </button>
-      </form>
-      {message && (
-        <div className={`message ${message.startsWith('✓') ? 'success' : 'error'}`}>
-          {message}
+        <button 
+          className={`nav-tab ${view === 'table' ? 'active' : ''}`}
+          onClick={() => setView('table')}
+        >
+          View All URLs
+        </button>
+      </nav>
+
+      {view === 'form' ? (
+        <div className="form-container">
+          <h1>URL Submission Form</h1>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="url-input">Enter URL:</label>
+              <input
+                id="url-input"
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://example.com"
+                required
+                disabled={loading}
+              />
+            </div>
+            <button type="submit" disabled={loading}>
+              {loading ? 'Submitting...' : 'Submit'}
+            </button>
+          </form>
+          {message && (
+            <div className={`message ${message.startsWith('✓') ? 'success' : 'error'}`}>
+              {message}
+            </div>
+          )}
         </div>
+      ) : (
+        <URLsTable />
       )}
     </div>
   )
