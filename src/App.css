@@ -72,7 +72,8 @@ label {
   font-size: 1.1rem;
 }
 
-input[type="url"] {
+input[type="url"],
+textarea {
   padding: 0.75rem;
   font-size: 1rem;
   border: 2px solid #646cff;
@@ -80,11 +81,23 @@ input[type="url"] {
   background-color: transparent;
   color: inherit;
   transition: border-color 0.3s;
+  font-family: inherit;
+  resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-input[type="url"]:focus {
+input[type="url"]:focus,
+textarea:focus {
   outline: none;
   border-color: #535bf2;
+}
+
+.char-count {
+  text-align: right;
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 0.5rem;
 }
 
 button {

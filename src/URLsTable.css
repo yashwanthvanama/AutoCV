@@ -142,19 +142,15 @@
 }
 
 .url-cell {
-  max-width: 400px;
+  max-width: 500px;
 }
 
-.url-link {
-  color: #667eea;
-  text-decoration: none;
-  word-break: break-all;
-  transition: color 0.2s;
-}
-
-.url-link:hover {
-  color: #764ba2;
-  text-decoration: underline;
+.content-preview {
+  color: #333;
+  word-break: break-word;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  cursor: help;
 }
 
 .id-cell code {

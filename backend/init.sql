@@ -4,15 +4,17 @@
 -- Create extensions if needed
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Create a sample table for URL submissions
+-- Create a sample table for text submissions
 CREATE TABLE IF NOT EXISTS url_submissions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    url TEXT NOT NULL,
+    url TEXT NOT NULL,  -- Renamed from 'url' but keeping column name for backward compatibility
     submitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     processed BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Note: TEXT type in PostgreSQL can store up to 1GB of text data
 
 -- Create index on submitted_at for faster queries
 CREATE INDEX IF NOT EXISTS idx_url_submissions_submitted_at ON url_submissions(submitted_at DESC);

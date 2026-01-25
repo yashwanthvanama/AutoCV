@@ -33,12 +33,12 @@ app.add_middleware(
 # Pydantic model for request validation
 # This ensures the data coming from the frontend is in the correct format
 class URLSubmission(BaseModel):
-    url: HttpUrl  # Automatically validates that it's a proper URL
+    url: str  # Changed to accept any text content (keeping field name for compatibility)
     
     class Config:
         json_schema_extra = {
             "example": {
-                "url": "https://example.com"
+                "url": "Any text content up to 2000+ characters..."
             }
         }
 

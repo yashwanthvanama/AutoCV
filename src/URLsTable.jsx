@@ -34,7 +34,8 @@ function URLsTable() {
   }
 
   const handleDelete = async (id, url) => {
-    if (!window.confirm(`Are you sure you want to delete this URL?\n\n${url}`)) {
+    const preview = url.length > 100 ? url.substring(0, 100) + '...' : url
+    if (!window.confirm(`Are you sure you want to delete this text?\n\n${preview}`)) {
       return
     }
     
@@ -92,7 +93,7 @@ function URLsTable() {
   return (
     <div className="urls-table-container">
       <div className="table-header">
-        <h2>Submitted URLs</h2>
+        <h2>Submitted Text Content</h2>
         <div className="table-info">
           <span className="count-badge">{urls.length} total</span>
           <button onClick={fetchUrls} className="refresh-button">
@@ -103,8 +104,8 @@ function URLsTable() {
 
       {urls.length === 0 ? (
         <div className="empty-state">
-          <p>No URLs submitted yet.</p>
-          <p>Submit a URL using the form to see it here!</p>
+          <p>No text submissions yet.</p>
+          <p>Submit text using the form to see it here!</p>
         </div>
       ) : (
         <div className="table-wrapper">
@@ -112,7 +113,7 @@ function URLsTable() {
             <thead>
               <tr>
                 <th>#</th>
-                <th>URL</th>
+                <th>Content</th>
                 <th>ID</th>
                 <th>Submitted At</th>
                 <th>Actions</th>
@@ -123,14 +124,11 @@ function URLsTable() {
                 <tr key={urlRecord.id}>
                   <td className="index-cell">{index + 1}</td>
                   <td className="url-cell">
-                    <a 
-                      href={urlRecord.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="url-link"
-                    >
-                      {urlRecord.url}
-                    </a>
+                    <div className="content-preview" title={urlRecord.url}>
+                      {urlRecord.url.length > 100 
+                        ? urlRecord.url.substring(0, 100) + '...' 
+                        : urlRecord.url}
+                    </div>
                   </td>
                   <td className="id-cell">
                     <code>{urlRecord.id}</code>

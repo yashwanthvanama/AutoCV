@@ -50,31 +50,35 @@ function App() {
           className={`nav-tab ${view === 'form' ? 'active' : ''}`}
           onClick={() => setView('form')}
         >
-          Submit URL
+          Submit Text
         </button>
         <button 
           className={`nav-tab ${view === 'table' ? 'active' : ''}`}
           onClick={() => setView('table')}
         >
-          View All URLs
+          View All Submissions
         </button>
       </nav>
 
       {view === 'form' ? (
         <div className="form-container">
-          <h1>URL Submission Form</h1>
+          <h1>Text Submission Form</h1>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="url-input">Enter URL:</label>
-              <input
+              <label htmlFor="url-input">Enter Text (up to 10,000 characters):</label>
+              <textarea
                 id="url-input"
-                type="url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://example.com"
+                placeholder="Enter any text content here..."
                 required
                 disabled={loading}
+                rows={10}
+                maxLength={10000}
               />
+              <div className="char-count">
+                {url.length} / 10,000 characters
+              </div>
             </div>
             <button type="submit" disabled={loading}>
               {loading ? 'Submitting...' : 'Submit'}
