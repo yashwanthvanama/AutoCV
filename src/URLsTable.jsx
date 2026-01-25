@@ -113,6 +113,7 @@ function URLsTable() {
             <thead>
               <tr>
                 <th>#</th>
+                <th>Role</th>
                 <th>Content</th>
                 <th>ID</th>
                 <th>Submitted At</th>
@@ -123,6 +124,9 @@ function URLsTable() {
               {urls.map((urlRecord, index) => (
                 <tr key={urlRecord.id}>
                   <td className="index-cell">{index + 1}</td>
+                  <td className="role-cell">
+                    <span className="role-badge">{urlRecord.role || 'N/A'}</span>
+                  </td>
                   <td className="url-cell">
                     <div className="content-preview" title={urlRecord.url}>
                       {urlRecord.url.length > 100 

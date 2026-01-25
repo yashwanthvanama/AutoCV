@@ -17,6 +17,7 @@ class URLSubmissionModel(Base):
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     url = Column(String, nullable=False, index=True)
+    role = Column(String(50), nullable=True)
     submitted_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     
     def __repr__(self):

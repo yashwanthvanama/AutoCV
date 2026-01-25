@@ -141,6 +141,21 @@
   color: #666;
 }
 
+.role-cell {
+  white-space: nowrap;
+  min-width: 150px;
+}
+
+.role-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
 .url-cell {
   max-width: 500px;
 }

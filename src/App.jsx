@@ -4,6 +4,7 @@ import URLsTable from './URLsTable'
 
 function App() {
   const [url, setUrl] = useState('')
+  const [role, setRole] = useState('Software Engineer')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [view, setView] = useState('form') // 'form' or 'table'
@@ -20,7 +21,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url })
+        body: JSON.stringify({ url, role })
       })
       
       // Check if request was successful
@@ -64,6 +65,55 @@ function App() {
         <div className="form-container">
           <h1>Text Submission Form</h1>
           <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Select Role:</label>
+              <div className="radio-group">
+                <label className="radio-label">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="Software Engineer"
+                    checked={role === 'Software Engineer'}
+                    onChange={(e) => setRole(e.target.value)}
+                    disabled={loading}
+                  />
+                  <span>Software Engineer</span>
+                </label>
+                <label className="radio-label">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="AI/ML Developer"
+                    checked={role === 'AI/ML Developer'}
+                    onChange={(e) => setRole(e.target.value)}
+                    disabled={loading}
+                  />
+                  <span>AI/ML Developer</span>
+                </label>
+                <label className="radio-label">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="Salesforce Developer"
+                    checked={role === 'Salesforce Developer'}
+                    onChange={(e) => setRole(e.target.value)}
+                    disabled={loading}
+                  />
+                  <span>Salesforce Developer</span>
+                </label>
+                <label className="radio-label">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="Salesforce Administrator"
+                    checked={role === 'Salesforce Administrator'}
+                    onChange={(e) => setRole(e.target.value)}
+                    disabled={loading}
+                  />
+                  <span>Salesforce Administrator</span>
+                </label>
+              </div>
+            </div>
             <div className="form-group">
               <label htmlFor="url-input">Enter Text (up to 10,000 characters):</label>
               <textarea

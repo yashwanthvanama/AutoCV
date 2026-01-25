@@ -34,11 +34,13 @@ app.add_middleware(
 # This ensures the data coming from the frontend is in the correct format
 class URLSubmission(BaseModel):
     url: str  # Changed to accept any text content (keeping field name for compatibility)
+    role: str  # Job role selection
     
     class Config:
         json_schema_extra = {
             "example": {
-                "url": "Any text content up to 2000+ characters..."
+                "url": "Any text content up to 2000+ characters...",
+                "role": "Software Engineer"
             }
         }
 
@@ -87,6 +89,7 @@ async def get_all_urls(db: Session = Depends(get_db)):
                 {
                     "id": str(url.id),
                     "url": url.url,
+                    "role": url.role,
                     "submitted_at": url.submitted_at.isoformat()
                 }
                 for url in urls
@@ -160,11 +163,13 @@ async def submit_url(submission: URLSubmission, db: Session = Depends(get_db)):
     try:
         # Convert the URL to a string
         url_str = str(submission.url)
+        role_str = str(submission.role)
         
         print(f"Received URL: {url_str}")
+        print(f"Received Role: {role_str}")
         
         # Create a new database record
-        db_submission = URLSubmissionModel(url=url_str)
+        db_submission = URLSubmissionModel(url=url_str, role=role_str)
         
         # Add to database session
         db.add(db_submission)
