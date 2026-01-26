@@ -109,7 +109,7 @@ async def get_all_urls(db: Session = Depends(get_db)):
 @app.delete("/api/urls/{url_id}")
 async def delete_url(url_id: str, db: Session = Depends(get_db)):
     """
-    Delete a URL from the database by its ID.
+    Delete a URL from the database by its ID and remove associated files.
     
     Args:
         url_id: UUID of the URL to delete
@@ -130,9 +130,22 @@ async def delete_url(url_id: str, db: Session = Depends(get_db)):
                 detail=f"URL with ID {url_id} not found"
             )
         
-        # Delete the record
+        # Delete the record from database
         db.delete(url_record)
         db.commit()
+        
+        # Delete the associated folder and its contents
+        resumes_dir = Path(__file__).parent.parent / "resumes"
+        record_folder = resumes_dir / url_id
+        
+        if record_folder.exists() and record_folder.is_dir():
+            try:
+                import shutil
+                shutil.rmtree(record_folder)
+                print(f"Deleted folder: {record_folder}")
+            except Exception as folder_error:
+                print(f"Warning: Could not delete folder {record_folder}: {folder_error}")
+                # Don't fail the request if folder deletion fails
         
         return {
             "success": True,
