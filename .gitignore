@@ -48,3 +48,7 @@ backend/__pycache__/
 # Docker
 docker-compose.override.yml
 
+# Templates
+templates/
+# Resumes
+resumes/

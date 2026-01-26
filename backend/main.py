@@ -4,10 +4,13 @@ from pydantic import BaseModel, HttpUrl
 from sqlalchemy.orm import Session
 from typing import Optional
 import uvicorn
+import os
+from pathlib import Path
 
 # Import database components
 from database import get_db, engine, Base
 from models import URLSubmissionModel
+from template_manager import compile_template_to_pdf
 
 # Create database tables
 # This will create all tables defined in models.py if they don't exist
@@ -181,6 +184,25 @@ async def submit_url(submission: URLSubmission, db: Session = Depends(get_db)):
         db.refresh(db_submission)
         
         print(f"Saved to database with ID: {db_submission.id}")
+        
+        # Create a folder in the resumes directory with the record ID
+        resumes_dir = Path(__file__).parent.parent / "resumes"
+        record_folder = resumes_dir / str(db_submission.id)
+        
+        try:
+            record_folder.mkdir(parents=True, exist_ok=True)
+            print(f"Created folder: {record_folder}")
+            
+            # Compile the appropriate LaTeX template to PDF and save in the folder
+            template_compiled = compile_template_to_pdf(role_str, record_folder)
+            if template_compiled:
+                print(f"Template successfully compiled to PDF for role: {role_str}")
+            else:
+                print(f"Warning: Failed to compile template to PDF for role: {role_str}")
+                
+        except Exception as folder_error:
+            print(f"Warning: Could not create folder or compile template: {folder_error}")
+            # Don't fail the request if folder creation fails
         
         return URLResponse(
             success=True,
