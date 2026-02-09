@@ -35,23 +35,23 @@ app.add_middleware(
 
 # Pydantic model for request validation
 # This ensures the data coming from the frontend is in the correct format
-class URLSubmission(BaseModel):
-    url: str  # Changed to accept any text content (keeping field name for compatibility)
+class JobDescriptionSubmission(BaseModel):
+    job_description: str  # Job description text content
     role: str  # Job role selection
     
     class Config:
         json_schema_extra = {
             "example": {
-                "url": "Any text content up to 2000+ characters...",
+                "job_description": "We are seeking a skilled Software Engineer with 5+ years of experience...",
                 "role": "Software Engineer"
             }
         }
 
 # Response model
-class URLResponse(BaseModel):
+class JobDescriptionResponse(BaseModel):
     success: bool
     message: str
-    url: str
+    job_description: str
     
 # Root endpoint - just to check if the API is running
 @app.get("/")
@@ -68,75 +68,75 @@ def health_check():
     return {"status": "healthy"}
 
 
-# Endpoint to get all submitted URLs (for testing/debugging)
-@app.get("/api/urls")
-async def get_all_urls(db: Session = Depends(get_db)):
+# Endpoint to get all submitted job descriptions
+@app.get("/api/job-descriptions")
+async def get_all_job_descriptions(db: Session = Depends(get_db)):
     """
-    Retrieve all URLs from the database.
+    Retrieve all job descriptions from the database.
     
     Args:
         db: Database session (injected by FastAPI)
         
     Returns:
-        List of all submitted URLs
+        List of all submitted job descriptions
     """
     try:
-        urls = db.query(URLSubmissionModel).order_by(
+        submissions = db.query(URLSubmissionModel).order_by(
             URLSubmissionModel.submitted_at.desc()
         ).all()
         
         return {
             "success": True,
-            "count": len(urls),
-            "urls": [
+            "count": len(submissions),
+            "submissions": [
                 {
-                    "id": str(url.id),
-                    "url": url.url,
-                    "role": url.role,
-                    "submitted_at": url.submitted_at.isoformat()
+                    "id": str(submission.id),
+                    "job_description": submission.job_description,
+                    "role": submission.role,
+                    "submitted_at": submission.submitted_at.isoformat()
                 }
-                for url in urls
+                for submission in submissions
             ]
         }
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Error retrieving URLs: {str(e)}"
+            detail=f"Error retrieving job descriptions: {str(e)}"
         )
 
 
-# Endpoint to delete a URL by ID
-@app.delete("/api/urls/{url_id}")
-async def delete_url(url_id: str, db: Session = Depends(get_db)):
+# Endpoint to delete a job description by ID
+@app.delete("/api/job-descriptions/{submission_id}")
+async def delete_job_description(submission_id: str, db: Session = Depends(get_db)):
     """
-    Delete a URL from the database by its ID and remove associated files.
+    Delete a job description from the database by its ID and remove associated files.
     
     Args:
-        url_id: UUID of the URL to delete
+        submission_id: UUID of the job description to delete
         db: Database session (injected by FastAPI)
         
     Returns:
         Success message
     """
     try:
-        # Find the URL by ID
-        url_record = db.query(URLSubmissionModel).filter(
-            URLSubmissionModel.id == url_id
+        # Find the submission by ID
+        submission = db.query(URLSubmissionModel).filter(
+            URLSubmissionModel.id == submission_id
         ).first()
         
-        if not url_record:
+        if not submission:
             raise HTTPException(
                 status_code=404,
-                detail=f"URL with ID {url_id} not found"
+                detail=f"Job description with ID {submission_id} not found"
             )
         
         # Delete the record from database
-        db.delete(url_record)
+        db.delete(submission)
         db.commit()
         
         # Delete the associated folder and its contents
         resumes_dir = Path(__file__).parent.parent / "resumes"
-        record_folder = resumes_dir / url_id
+        record_folder = resumes_dir / submission_id
         
         if record_folder.exists() and record_folder.is_dir():
             try:
@@ -149,8 +149,8 @@ async def delete_url(url_id: str, db: Session = Depends(get_db)):
         
         return {
             "success": True,
-            "message": f"URL deleted successfully",
-            "deleted_id": url_id
+            "message": f"Job description deleted successfully",
+            "deleted_id": submission_id
         }
         
     except HTTPException:
@@ -159,33 +159,33 @@ async def delete_url(url_id: str, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(
             status_code=500,
-            detail=f"Error deleting URL: {str(e)}"
+            detail=f"Error deleting job description: {str(e)}"
         )
 
 
-# Main endpoint to handle URL submissions
-@app.post("/api/submit-url", response_model=URLResponse)
-async def submit_url(submission: URLSubmission, db: Session = Depends(get_db)):
+# Main endpoint to handle job description submissions
+@app.post("/api/submit-job-description", response_model=JobDescriptionResponse)
+async def submit_job_description(submission: JobDescriptionSubmission, db: Session = Depends(get_db)):
     """
-    Receives a URL from the frontend and saves it to the database.
+    Receives a job description from the frontend and saves it to the database.
     
     Args:
-        submission: URLSubmission object containing the URL
+        submission: JobDescriptionSubmission object containing the job description
         db: Database session (injected by FastAPI)
         
     Returns:
-        URLResponse with success status and message
+        JobDescriptionResponse with success status and message
     """
     try:
-        # Convert the URL to a string
-        url_str = str(submission.url)
+        # Extract job description and role
+        job_desc_str = str(submission.job_description)
         role_str = str(submission.role)
         
-        print(f"Received URL: {url_str}")
+        print(f"Received job description: {job_desc_str[:100]}...")
         print(f"Received Role: {role_str}")
         
         # Create a new database record
-        db_submission = URLSubmissionModel(url=url_str, role=role_str)
+        db_submission = URLSubmissionModel(job_description=job_desc_str, role=role_str)
         
         # Add to database session
         db.add(db_submission)
@@ -217,17 +217,17 @@ async def submit_url(submission: URLSubmission, db: Session = Depends(get_db)):
             print(f"Warning: Could not create folder or compile template: {folder_error}")
             # Don't fail the request if folder creation fails
         
-        return URLResponse(
+        return JobDescriptionResponse(
             success=True,
-            message=f"URL saved successfully to database with ID: {db_submission.id}",
-            url=url_str
+            message=f"Job description saved successfully to database with ID: {db_submission.id}",
+            job_description=job_desc_str
         )
         
     except Exception as e:
         # Rollback the transaction in case of error
         db.rollback()
-        print(f"Error saving URL: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error saving URL: {str(e)}")
+        print(f"Error saving job description: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error saving job description: {str(e)}")
 
 # Run the server (only when running this file directly)
 if __name__ == "__main__":

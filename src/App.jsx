@@ -3,7 +3,7 @@ import './App.css'
 import URLsTable from './URLsTable'
 
 function App() {
-  const [url, setUrl] = useState('')
+  const [jobDescription, setJobDescription] = useState('')
   const [role, setRole] = useState('Software Engineer')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -16,12 +16,12 @@ function App() {
     
     try {
       // Send POST request to FastAPI backend
-      const response = await fetch('http://localhost:8000/api/submit-url', {
+      const response = await fetch('http://localhost:8000/api/submit-job-description', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url, role })
+        body: JSON.stringify({ job_description: jobDescription, role })
       })
       
       // Check if request was successful
@@ -34,7 +34,7 @@ function App() {
       
       console.log('Response from backend:', data)
       setMessage(`✓ ${data.message}`)
-      setUrl('') // Clear the input field
+      setJobDescription('') // Clear the input field
       
     } catch (error) {
       console.error('Error submitting URL:', error)
@@ -51,7 +51,7 @@ function App() {
           className={`nav-tab ${view === 'form' ? 'active' : ''}`}
           onClick={() => setView('form')}
         >
-          Submit Text
+          Submit Job Description
         </button>
         <button 
           className={`nav-tab ${view === 'table' ? 'active' : ''}`}
@@ -63,7 +63,7 @@ function App() {
 
       {view === 'form' ? (
         <div className="form-container">
-          <h1>Text Submission Form</h1>
+          <h1>Job Description Submission</h1>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Select Role:</label>
@@ -115,19 +115,19 @@ function App() {
               </div>
             </div>
             <div className="form-group">
-              <label htmlFor="url-input">Enter Text (up to 10,000 characters):</label>
+              <label htmlFor="job-desc-input">Enter Job Description (up to 10,000 characters):</label>
               <textarea
-                id="url-input"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="Enter any text content here..."
+                id="job-desc-input"
+                value={jobDescription}
+                onChange={(e) => setJobDescription(e.target.value)}
+                placeholder="Paste the job description here..."
                 required
                 disabled={loading}
                 rows={10}
                 maxLength={10000}
               />
               <div className="char-count">
-                {url.length} / 10,000 characters
+                {jobDescription.length} / 10,000 characters
               </div>
             </div>
             <button type="submit" disabled={loading}>
