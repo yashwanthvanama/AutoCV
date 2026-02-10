@@ -12,6 +12,7 @@ from database import get_db, engine, Base
 from models import URLSubmissionModel
 from template_manager import compile_template_to_pdf
 from embeddings import generate_job_description_embedding
+from similarity_finder import find_most_similar_job
 
 # Create database tables
 # This will create all tables defined in models.py if they don't exist
@@ -193,6 +194,18 @@ async def submit_job_description(submission: JobDescriptionSubmission, db: Sessi
         except Exception as embed_error:
             print(f"Warning: Failed to generate embedding: {embed_error}")
             embedding = None
+        
+        # Find most similar existing job description
+        if embedding:
+            most_similar_job, similarity_score = find_most_similar_job(embedding, db)
+            if most_similar_job:
+                print(f"\nMost similar job found:")
+                print(f"  ID: {most_similar_job.id}")
+                print(f"  Role: {most_similar_job.role}")
+                print(f"  Similarity: {similarity_score:.4f} ({similarity_score * 100:.2f}%)")
+                print(f"  Job Description: {most_similar_job.job_description[:100]}...")
+            else:
+                print("No existing jobs with embeddings to compare against")
         
         # Create a new database record with embedding
         db_submission = URLSubmissionModel(
