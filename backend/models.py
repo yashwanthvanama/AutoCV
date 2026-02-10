@@ -1,11 +1,9 @@
 """
 Database models for AutoCV
 """
-from sqlalchemy import Column, String, DateTime, Boolean
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, DateTime, Boolean, text
 from pgvector.sqlalchemy import Vector
 from datetime import datetime
-import uuid
 from database import Base
 
 
@@ -16,7 +14,7 @@ class URLSubmissionModel(Base):
     """
     __tablename__ = "url_submissions"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(20), primary_key=True, server_default=text("'JD-' || nextval('jd_id_seq')"))
     job_description = Column(String, nullable=False, index=True)
     role = Column(String(50), nullable=True)
     embedding = Column(Vector(768), nullable=True)  # 768-dimensional vector embeddings

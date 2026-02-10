@@ -3,17 +3,20 @@
 
 -- Drop existing table to recreate with new schema
 DROP TABLE IF EXISTS url_submissions CASCADE;
+DROP SEQUENCE IF EXISTS jd_id_seq CASCADE;
 
 -- Create extensions if needed
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS vector;
+
+-- Create sequence for auto-incrementing IDs
+CREATE SEQUENCE jd_id_seq START 1;
 
 -- Create table for job description submissions
 CREATE TABLE IF NOT EXISTS url_submissions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    job_description TEXT NOT NULL,  -- Actual job description text
-    role VARCHAR(50),  -- Job role selection
-    embedding vector(768),  -- Vector embeddings for semantic search (768 dimensions)
+    id VARCHAR(20) PRIMARY KEY DEFAULT ('JD-' || nextval('jd_id_seq')),
+    job_description TEXT NOT NULL,
+    role VARCHAR(50),
+    embedding vector(768),
     submitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     processed BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
