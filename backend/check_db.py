@@ -24,9 +24,7 @@ try:
             print(f"   Role: {url.role}")
             print(f"   Submitted at: {url.submitted_at}")
             
-            # Check if embedding exists and show info
-            if hasattr(url, 'embedding') and url.embedding:
-                # For pgvector, embedding might be a string representation
+            if hasattr(url, 'embedding') and url.embedding is not None:
                 embedding_str = str(url.embedding)
                 if len(embedding_str) > 100:
                     print(f"   Embedding: {embedding_str[:100]}... (truncated, length: {len(embedding_str)})")

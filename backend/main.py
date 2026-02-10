@@ -11,6 +11,7 @@ from pathlib import Path
 from database import get_db, engine, Base
 from models import URLSubmissionModel
 from template_manager import compile_template_to_pdf
+from embeddings import generate_job_description_embedding
 
 # Create database tables
 # This will create all tables defined in models.py if they don't exist
@@ -184,8 +185,21 @@ async def submit_job_description(submission: JobDescriptionSubmission, db: Sessi
         print(f"Received job description: {job_desc_str[:100]}...")
         print(f"Received Role: {role_str}")
         
-        # Create a new database record
-        db_submission = URLSubmissionModel(job_description=job_desc_str, role=role_str)
+        # Generate embedding for the job description
+        print("Generating embedding...")
+        try:
+            embedding = generate_job_description_embedding(job_desc_str)
+            print(f"Embedding generated successfully (dimension: {len(embedding)})")
+        except Exception as embed_error:
+            print(f"Warning: Failed to generate embedding: {embed_error}")
+            embedding = None
+        
+        # Create a new database record with embedding
+        db_submission = URLSubmissionModel(
+            job_description=job_desc_str, 
+            role=role_str,
+            embedding=embedding
+        )
         
         # Add to database session
         db.add(db_submission)
