@@ -2,6 +2,10 @@ import torch
 from sentence_transformers import SentenceTransformer
 from typing import List, Optional
 import numpy as np
+import os
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 
 class EmbeddingGenerator:
@@ -15,6 +19,10 @@ class EmbeddingGenerator:
             device = 'cuda'
         else:
             device = 'cpu'
+        
+        hf_token = os.getenv("HF_TOKEN")
+        if hf_token:
+            os.environ["HF_TOKEN"] = hf_token
             
         self.model = SentenceTransformer(
             model_name,
@@ -39,10 +47,6 @@ class EmbeddingGenerator:
         
         return embedding
     
-    def compute_similarity(self, embedding1: np.ndarray, embedding2: np.ndarray) -> float:
-        return float(np.dot(embedding1, embedding2))
-
-
 _embedding_generator: Optional[EmbeddingGenerator] = None
 
 
@@ -57,6 +61,10 @@ def generate_job_description_embedding(job_description: str) -> List[float]:
     generator = get_embedding_generator()
     embedding = generator.generate_embedding(job_description, task_prefix="clustering")
     return embedding.tolist()
+
+
+def compute_similarity(embedding1: np.ndarray, embedding2: np.ndarray) -> float:
+    return float(np.dot(embedding1, embedding2))
 
 
 if __name__ == "__main__":
@@ -74,13 +82,3 @@ if __name__ == "__main__":
     print(f"L2 norm: {np.linalg.norm(embedding):.6f}")
     print(f"\nFirst 10 values: {embedding[:10]}")
     print(f"Last 10 values: {embedding[-10:]}")
-    
-    test_text2 = "Senior Python developer needed for AI/ML projects."
-    embedding2 = generator.generate_embedding(test_text2, task_prefix="clustering")
-    similarity = generator.compute_similarity(embedding, embedding2)
-    
-    print(f"\n\nSimilarity test:")
-    print(f"Text 1: {test_text}")
-    print(f"Text 2: {test_text2}")
-    print(f"Cosine Similarity: {similarity:.4f}")
-    print("\n" + "=" * 80)
