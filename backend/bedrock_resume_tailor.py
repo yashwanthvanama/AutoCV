@@ -51,13 +51,13 @@ def tailor_resume(job_description: str, base_skills: Dict[str, str], role_contex
                 "content": prompt
             }
         ],
-        "temperature": 0.3,  # Lower temperature for more consistent, focused output
-        "top_p": 0.9
+        "temperature": 0.3  # Lower temperature for more consistent, focused output
     }
     
-    # Call Bedrock
+    # Call Bedrock - using US inference profile for Claude Sonnet 4.5
+    # This provides better availability within US regions
     response = bedrock_runtime.invoke_model(
-        modelId='anthropic.claude-sonnet-4-5-v2:0',  # Claude Sonnet 4.5
+        modelId='us.anthropic.claude-sonnet-4-5-20250929-v1:0',
         body=json.dumps(request_body)
     )
     
@@ -66,6 +66,14 @@ def tailor_resume(job_description: str, base_skills: Dict[str, str], role_contex
     
     # Extract the content from Claude's response
     assistant_message = response_body['content'][0]['text']
+    
+    # Clean the response - remove markdown code blocks if present
+    assistant_message = assistant_message.strip()
+    if assistant_message.startswith('```'):
+        # Remove markdown code fences
+        lines = assistant_message.split('\n')
+        assistant_message = '\n'.join(lines[1:-1]) if len(lines) > 2 else assistant_message
+        assistant_message = assistant_message.replace('```json', '').replace('```', '').strip()
     
     # Parse the JSON response
     tailored_resume = json.loads(assistant_message)
@@ -98,14 +106,16 @@ def main():
             "company": "Tech Corp",
             "title": "Senior Software Engineer",
             "start_date": "2022-01",
-            "end_date": "present"
+            "end_date": "present",
+            "focus": "quoting platform modernization, async messaging, CI/CD, API gateway"
         },
         {
             "role_id": "R2",
             "company": "StartupXYZ",
             "title": "Software Engineer",
             "start_date": "2020-03",
-            "end_date": "2021-12"
+            "end_date": "2021-12",
+            "focus": "quoting UI, pricing/approval workflows, integrations"
         }
     ]
     
