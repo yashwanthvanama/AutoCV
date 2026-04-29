@@ -142,6 +142,64 @@ def compile_template_to_pdf(role: str, destination_folder: Path) -> bool:
         return False
 
 
+def compile_tex_in_folder(tex_path: Path) -> bool:
+    """Compile a .tex file that already lives in its destination folder.
+
+    Runs xelatex twice in the folder, cleans aux files, and copies the PDF to the
+    parent `resumes/` directory so it's easy to find.
+    """
+    try:
+        if not tex_path.exists():
+            print(f"Error: .tex not found at {tex_path}")
+            return False
+
+        destination_folder = tex_path.parent
+        base_name = tex_path.stem
+        pdf_filename = f"{base_name}.pdf"
+
+        print(f"Compiling tailored .tex: {tex_path}")
+        for pass_num in (1, 2):
+            print(f"Running xelatex (pass {pass_num})...")
+            result = subprocess.run(
+                [
+                    "xelatex",
+                    "-output-directory", str(destination_folder),
+                    "-interaction=nonstopmode",
+                    str(tex_path),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+
+        output_pdf = destination_folder / pdf_filename
+        if result.returncode == 0 and output_pdf.exists():
+            print(f"Successfully compiled PDF: {output_pdf}")
+            cleanup_aux_files(destination_folder, base_name)
+            resumes_pdf = destination_folder.parent / pdf_filename
+            try:
+                shutil.copy2(output_pdf, resumes_pdf)
+                print(f"PDF also saved to: {resumes_pdf}")
+            except Exception as e:
+                print(f"Warning: Could not copy PDF to resumes directory: {e}")
+            return True
+
+        print(f"Error compiling LaTeX template (rc={result.returncode})")
+        print(f"STDOUT: {result.stdout[-500:]}")
+        print(f"STDERR: {result.stderr[-500:]}")
+        return False
+
+    except subprocess.TimeoutExpired:
+        print("Error: LaTeX compilation timed out")
+        return False
+    except FileNotFoundError:
+        print("Error: xelatex not found. Install LaTeX (brew install --cask mactex)")
+        return False
+    except Exception as e:
+        print(f"Error compiling tailored template: {e}")
+        return False
+
+
 def cleanup_aux_files(folder: Path, base_name: str):
     """
     Clean up auxiliary files created by pdflatex.
