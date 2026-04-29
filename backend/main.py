@@ -13,6 +13,7 @@ from models import URLSubmissionModel
 from template_manager import compile_template_to_pdf
 from embeddings import generate_job_description_embedding
 from similarity_finder import find_most_similar_job
+from jd_fetcher import fetch_job_description_from_url
 
 # Create database tables
 # This will create all tables defined in models.py if they don't exist
@@ -54,6 +55,25 @@ class JobDescriptionResponse(BaseModel):
     success: bool
     message: str
     job_description: str
+
+
+class JobURLFetchRequest(BaseModel):
+    url: HttpUrl
+
+    class Config:
+        json_schema_extra = {
+            "example": {"url": "https://boards.greenhouse.io/example/jobs/1234567"}
+        }
+
+
+class JobURLFetchResponse(BaseModel):
+    success: bool
+    status: str
+    title: Optional[str] = None
+    company: Optional[str] = None
+    location: Optional[str] = None
+    job_description: str
+    notes: Optional[str] = None
     
 # Root endpoint - just to check if the API is running
 @app.get("/")
@@ -163,6 +183,44 @@ async def delete_job_description(submission_id: str, db: Session = Depends(get_d
             status_code=500,
             detail=f"Error deleting job description: {str(e)}"
         )
+
+
+# Endpoint to fetch a job description from a posting URL using Claude Agent SDK
+@app.post("/api/fetch-jd-from-url", response_model=JobURLFetchResponse)
+async def fetch_jd_from_url(payload: JobURLFetchRequest):
+    """
+    Given a URL to a job posting, use a Claude agent (with WebFetch) to
+    retrieve the page and extract the job description, title, company, and
+    location. Performs a liveness check so callers can distinguish active
+    postings from expired/removed ones before persisting them.
+    """
+    url_str = str(payload.url)
+    print(f"Fetching job description from URL: {url_str}")
+
+    try:
+        result = await fetch_job_description_from_url(url_str)
+    except Exception as e:
+        print(f"Error running JD fetcher agent: {e}")
+        raise HTTPException(
+            status_code=502,
+            detail=f"Failed to fetch job description from URL: {str(e)}",
+        )
+
+    if result.status == "error":
+        raise HTTPException(
+            status_code=422,
+            detail=result.notes or "Agent could not extract a job description from this URL.",
+        )
+
+    return JobURLFetchResponse(
+        success=result.status == "active",
+        status=result.status,
+        title=result.title,
+        company=result.company,
+        location=result.location,
+        job_description=result.job_description,
+        notes=result.notes,
+    )
 
 
 # Main endpoint to handle job description submissions
