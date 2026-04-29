@@ -11,7 +11,8 @@ from pathlib import Path
 # Import database components
 from database import get_db, engine, Base
 from models import URLSubmissionModel
-from template_manager import compile_template_to_pdf
+from template_manager import compile_template_to_pdf, compile_tex_in_folder
+from agent_tailor import tailor_resume_tex
 
 # Create database tables
 # This will create all tables defined in models.py if they don't exist
@@ -183,11 +184,18 @@ async def submit_job_description(submission: JobDescriptionSubmission):
     record_folder.mkdir(parents=True, exist_ok=True)
     print(f"Created folder: {record_folder}")
 
-    template_compiled = compile_template_to_pdf(role_str, record_folder)
-    if template_compiled:
-        print(f"Template successfully compiled to PDF for role: {role_str}")
+    tailored_tex = await tailor_resume_tex(role_str, job_desc_str, record_folder)
+
+    if tailored_tex is None:
+        print(f"Tailoring skipped; falling back to untailored template for role: {role_str}")
+        compiled = compile_template_to_pdf(role_str, record_folder)
     else:
-        print(f"Warning: Failed to compile template to PDF for role: {role_str}")
+        compiled = compile_tex_in_folder(tailored_tex)
+
+    if compiled:
+        print(f"PDF generated for role: {role_str}")
+    else:
+        print(f"Warning: Failed to compile PDF for role: {role_str}")
 
     return JobDescriptionResponse(
         success=True,
